@@ -1,0 +1,11 @@
+#!/bin/bash
+
+git add --all
+
+echo "Enter Commit message:"; read desc
+
+git commit -m "$desc"
+
+brach_name=$(git branch | grep \* | cut -d ' ' -f2)
+
+git push origin $brach_name

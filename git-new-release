@@ -1,0 +1,17 @@
+#!/bin/bash
+
+git checkout master
+
+git pull 
+
+current_tag=$(git describe --tags --abbrev=0)
+
+if [ $current_tag ]; then
+  echo "current tag: $current_tag"
+fi
+
+echo "Enter new tag version: "; read new_tag
+
+git tag -a v$new_tag -m "Release v$new_tag"
+
+git push --tags 

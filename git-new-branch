@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Enter Branch Type:"; read branch_type
+echo "Enter Branch Name:"; read branch_name
+
+git checkout -b $branch_type/$branch_name
