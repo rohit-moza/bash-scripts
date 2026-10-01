@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# gnr - git new release
+# Update the default branch, show the latest release tag, then create and
+# push a new annotated tag "v<version>".
+#
+set -euo pipefail
+
+# Detect the default branch (main/master) from origin, with a sensible fallback.
+default_branch="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@' || true)"
+if [[ -z "${default_branch}" ]]; then
+  if git show-ref --verify --quiet refs/heads/main; then
+    default_branch="main"
+  else
+    default_branch="master"
+  fi
+fi
+
+echo "Updating ${default_branch}..."
+git checkout "${default_branch}"
+git pull origin "${default_branch}"
+
+current_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+if [[ -n "${current_tag}" ]]; then
+  echo "Current release: ${current_tag}"
+else
+  echo "No existing release tags."
+fi
+
+read -rp "New version (without the leading 'v'): " version
+version="$(printf '%s' "${version}" | xargs || true)"
+if [[ -z "${version}" ]]; then
+  echo "gnr: a version is required" >&2
+  exit 1
+fi
+
+tag="v${version}"
+read -rp "Create and push release ${tag}? [y/N] " confirm
+if [[ ! "${confirm}" =~ ^[Yy]$ ]]; then
+  echo "Aborted."
+  exit 0
+fi
+
+git tag -a "${tag}" -m "Release ${tag}"
+git push origin "${tag}"
+echo "Released ${tag}."
