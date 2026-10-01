@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# gnc - git new commit
+# Stage all changes, commit with a message, then push the current branch.
+#
+set -euo pipefail
+
+branch_name="$(git branch --show-current)"
+if [[ -z "${branch_name}" ]]; then
+  echo "gnc: cannot commit from a detached HEAD" >&2
+  exit 1
+fi
+
+if git diff --quiet && git diff --cached --quiet && [[ -z "$(git ls-files --others --exclude-standard)" ]]; then
+  echo "gnc: nothing to commit, working tree clean" >&2
+  exit 1
+fi
+
+git add --all
+echo "Changes to be committed:"
+git status --short
+
+read -rp "Commit message: " commit_message
+commit_message="$(printf '%s' "${commit_message}" | xargs || true)"
+if [[ -z "${commit_message}" ]]; then
+  echo "gnc: a commit message is required" >&2
+  exit 1
+fi
+
+git commit -m "${commit_message}"
+git push origin "${branch_name}"
