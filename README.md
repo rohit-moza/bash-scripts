@@ -27,6 +27,37 @@ Make sure the target directory is on your `PATH`:
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
+## Testing / Development
+
+The scripts are covered by a [bats](https://github.com/bats-core/bats-core) test
+suite under [`tests/`](tests). Run it with:
+
+```sh
+./run-tests.sh
+```
+
+`run-tests.sh` uses `bats` if it is on your `PATH`; otherwise it shallow-clones
+bats-core into `tests/bats/` (gitignored) and uses that, so no manual setup is
+required.
+
+Each test runs the script against a throwaway git fixture that has its own
+**local bare repo as `origin`** — pushes, pulls, and tags stay entirely local,
+nothing hits a real remote, and your real repo and git config are never touched.
+The suite covers, per script:
+
+- `gnb`: builds `<type>/<name>`, hyphenates spaces, trims whitespace, and
+  rejects empty input.
+- `gnc`: stages all changes (including untracked files), commits with the given
+  message, pushes the current branch to `origin`, and refuses a clean tree,
+  an empty message, or a detached HEAD.
+- `gnr`: detects the default branch (verified on a `main`-based repo), reports
+  the latest tag, and creates and pushes an annotated `v<version>` tag only
+  after confirmation.
+
+CI (GitHub Actions, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs
+`shellcheck` on `bin/*`, `install.sh`, and `run-tests.sh`, and runs the bats
+suite on every push and pull request.
+
 ## Notes
 
 - All scripts use `set -euo pipefail`, quote their expansions, and read input with `read -r`.

@@ -2,3 +2,6 @@
 .DS_Store
 *.swp
 *~
+
+# Test runner bootstraps bats here; do not commit it.
+tests/bats/
